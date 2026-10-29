@@ -1,5 +1,6 @@
 # --- binaries (too big for GitHub; live copies stay in installdir) ---
 *-real
+installdir/*/*/bin/
 *.old
 
 # --- editor / backup junk ---
