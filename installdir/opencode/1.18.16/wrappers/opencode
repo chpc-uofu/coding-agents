@@ -1,0 +1,19 @@
+#!/bin/bash
+# Wrapper for opencode - block startup if CWD contains another user's uNID in the path.
+# A uNID is defined as 'u' followed by exactly 7 digits (e.g. u6039728).
+
+INVOKING_USER=$(id -un)
+CWD=$(pwd -P 2>/dev/null || pwd)
+
+if [[ "$CWD" =~ (u[0-9]{7}) ]]; then
+    path_unid="${BASH_REMATCH[1]}"
+    if [[ "$path_unid" != "$INVOKING_USER" ]]; then
+        echo "ERROR: opencode cannot be started from another user's directory." >&2
+        echo "  You are         : $INVOKING_USER" >&2
+        echo "  uNID in path    : $path_unid" >&2
+        echo "  Please cd to your own home or a scratch directory first." >&2
+        exit 1
+    fi
+fi
+
+exec /uufs/chpc.utah.edu/sys/installdir/r8/opencode/1.14.29/bin/opencode "$@"
