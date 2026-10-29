@@ -10,8 +10,8 @@ Configured to use CHPC Qwen3 Coder as default model but use /connect and /models
 local host = subprocess("hostname -s"):gsub("\n$", "")
 
 if mode() == "load" and host:lower():find("redwood", 1, true) then
-  LmodError("OpenCode is not available on to use in the Protected Environment currently.")
-  LmodError("CHPC staff are still testing OpenCode and the CHPC hosted coding model for data leakage.")
+  LmodError("OpenCode is not available in the Protected Environment currently.\n" ..
+            "CHPC staff are still testing OpenCode and the CHPC hosted coding model for data leakage.")
 end
 
 -- print out a message to the terminal
@@ -32,24 +32,10 @@ end
 
 local root = "/uufs/chpc.utah.edu/sys/installdir/r8/opencode/1.18.16"
 local opencode_bin = pathJoin(root, "bin", "opencode")
-local nono_root = "/uufs/chpc.utah.edu/sys/installdir/r8/nono/0.44.0"
-local nono_bin = pathJoin(nono_root, "nono")
 local agents_dir = "/uufs/chpc.utah.edu/sys/etc/agents"
 
 -- specify install dir binaries
 prepend_path("PATH", pathJoin(root, "bin"))
-prepend_path("PATH", nono_root)
-
--- send interactive shell usage through nono without replacing the real binary
-set_alias(
-  "opencode",
-  nono_bin
-    .. " run --profile opencode --allow-cwd"
-    .. " --read " .. root
-    .. " --read " .. agents_dir
-    .. " -- "
-    .. opencode_bin
-)
 
 -- specify path to opencode.json config, the config itself specifies the location for the skills
 setenv("OPENCODE_CONFIG", pathJoin(agents_dir, "opencode.json"))

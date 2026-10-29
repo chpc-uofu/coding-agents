@@ -34,7 +34,7 @@ end
 local version = "0.164.0"
 local root = pathJoin("/uufs/chpc.utah.edu/sys/installdir/r8/codex", version)
 
-prepend_path("PATH", pathJoin(root, "bin"))
+prepend_path("PATH", pathJoin(root, "wrapper"))
 
 whatis("Name         : Codex")
 whatis("Version      : 0.164.0")

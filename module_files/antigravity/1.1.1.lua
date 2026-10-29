@@ -16,17 +16,12 @@ Gemini CLI. Gemini CLI was written in Typescript while Antigravity is written in
 
 local host = (os.getenv("HOSTNAME") or ""):lower()
 if mode() == "load" and host:find("redwood", 1, true) then
-  LmodError("Gemini CLI is not available in the Protected Environment due to potential data leakage.")
+  LmodError("Antigravity is not available in the Protected Environment due to potential data leakage.")
 end
 
 local base = pathJoin("/uufs/chpc.utah.edu/sys/installdir/r8", myModuleName(), version)
 
-prepend_path("PATH", pathJoin(base, "bin"))
-
-
-set_shell_function("agy",                                                                                                                                           
-   pathJoin(base, "bin/agy") .. ' --add-dir /uufs/chpc.utah.edu/sys/etc/agents "$@"',
-   pathJoin(base, "bin/agy") .. ' --add-dir /uufs/chpc.utah.edu/sys/etc/agents $*')
+prepend_path("PATH", pathJoin(base, "wrapper"))
 
 whatis("Name         : antigravity")
 whatis("Version      : " .. version)

@@ -34,7 +34,7 @@ end
 local version = "0.153.4"
 local root = pathJoin("/uufs/chpc.utah.edu/sys/installdir/r8/codex_CHPC_local_model", version)
 
-prepend_path("PATH", pathJoin(root, "bin"))
+prepend_path("PATH", pathJoin(root, "wrapper"))
 
 -- The local inference server does not authenticate, but Codex requires the
 -- provider's env_key to be set to something non-empty before it will start.

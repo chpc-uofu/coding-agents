@@ -30,5 +30,5 @@ whatis("Installed on : 2026-09-28, by BRC")
 
 
 local base = pathJoin("/uufs/chpc.utah.edu/sys/installdir/r8", myModuleName(), version)
-prepend_path("PATH",pathJoin(base,"bin"))
+prepend_path("PATH",pathJoin(base,"wrapper"))
 

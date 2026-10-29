@@ -10,4 +10,4 @@ LINKER=/uufs/chpc.utah.edu/sys/etc/agents/gemini_chpc_links.sh
 # If the skills/ CHPC prompt linker script is present and readable, then source it. If not, then print message.
 if [[ -r "$LINKER" ]]; then source "$LINKER"; else echo "CHPC: $LINKER not found; AGENTS.md/skills not linked" >&2; fi
 
-exec antigravity-real --sandbox "$@"
+exec /uufs/chpc.utah.edu/sys/installdir/r8/antigravity/1.1.1/bin/antigravity-real --sandbox "$@"

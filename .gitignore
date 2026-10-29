@@ -1,0 +1,38 @@
+# --- binaries (too big for GitHub; live copies stay in installdir) ---
+*-real
+*.old
+
+# --- editor / backup junk ---
+*~
+.*.swp
+*.bak*
+*backup*
+
+# --- generated ---
+node_modules/
+bun.lock
+*.out
+*.err
+*.log
+__pycache__/
+
+# --- secrets ---
+.env
+.env.*
+*.pem
+*.key
+
+# --- agent memory / session context (personal, not for public) ---
+# per-project agent dirs: settings.local.json, memory, transcripts, plans
+.claude/
+!agents/claude/etc/.claude/
+.codex/
+.gemini/
+.opencode/
+.cursor/
+.aider*
+.memory/
+memory/
+MEMORY.md
+CLAUDE.local.md
+*.jsonl

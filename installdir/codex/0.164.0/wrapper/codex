@@ -37,4 +37,4 @@ for b in curl wget rsync scp sftp nc ncat telnet rm rmdir unlink; do
   mask+=(--ro-bind /dev/null "$r")
 done
 
-exec "$BWRAP" --dev-bind / / "${mask[@]}" codex-real "$@" "${PINS[@]}"
+exec "$BWRAP" --dev-bind / / "${mask[@]}" /uufs/chpc.utah.edu/sys/installdir/r8/codex/0.164.0/bin/codex-real "$@" "${PINS[@]}"

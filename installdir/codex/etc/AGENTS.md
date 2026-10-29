@@ -1,1 +1,0 @@
-/uufs/chpc.utah.edu/sys/etc/agents/AGENTS.md
