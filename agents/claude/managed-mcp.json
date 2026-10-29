@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "chpc-docs": {
+      "type": "http",
+      "url": "http://nimbus.chpc.utah.edu:8000/mcp"
+    }
+  }
+}

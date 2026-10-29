@@ -1,0 +1,101 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "shell": "bash",
+  "plugin": [],
+  "provider": {
+    "chpc-vllm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "CHPC Coder",
+      "options": {
+        "baseURL": "http://nimbus.chpc.utah.edu:44242/v1"
+      },
+      "models": {
+        "Qwen/Qwen3.8-27B-FP8": {
+          "name": "Qwen 3.8 27B",
+          "options": {
+          "chat_template_kwargs": { "enable_thinking": false }
+           },
+          "limit": {
+            "context": 262144,
+            "output": 20000
+          }
+        }
+      }
+    },
+    "sandstone": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Sandstone",
+      "options": {
+        "baseURL": "https://sandbox.ai.utah.edu/v1",
+        "apiKey": "{env:SANDSTONE_KEY}"
+      },
+      "models": {
+        "deepseek-v4-flash": {
+          "name": "DeepSeek V4 Flash",
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          }
+        },
+        "glm-5.3-flash": {
+          "name": "GLM-5.3-Flash",
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          }
+        },
+        "gpt-oss-120b": {
+          "name": "gpt-oss-120b",
+          "limit": {
+            "context": 131072,
+            "output": 32768
+          }
+        },
+        "muse-glimmer-30b": {
+          "name": "Muse Glimmer 30B",
+          "limit": {
+            "context": 131072,
+            "output": 32768
+          }
+        },
+        "gemma-4-26b": {
+          "name": "Gemma 4 26B",
+          "limit": {
+            "context": 65536,
+            "output": 16384
+          }
+        }
+      }
+    }
+  },
+  "mcp": {
+    "chpc-docs": {
+      "type": "remote",
+      "url": "http://nimbus.chpc.utah.edu:8000/mcp",
+      "enabled": true
+    }
+  },
+  "model": "chpc-vllm/Qwen/Qwen3.8-27B-FP8",
+  "small_model": "chpc-vllm/Qwen/Qwen3.8-27B-FP8",
+  "instructions": [
+    "/uufs/chpc.utah.edu/sys/etc/agents/AGENTS.md",
+    "/uufs/chpc.utah.edu/sys/etc/agents/skills/*.md"
+  ],
+  "enabled_providers": [
+    "chpc-vllm",
+    "openai",
+    "anthropic",
+    "google",
+    "sandstone"
+  ],
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "git*": "allow",
+      "npm*": "allow",
+      "grep*": "allow",
+      "rm*": "deny"
+    }
+  }
+}

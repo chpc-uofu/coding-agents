@@ -1,0 +1,22 @@
+#!/bin/bash
+# Claude Code wrapper -- executes claude-real with extra flags for security and CHPC awareness
+#
+# --settings  points to the settings.json which contains permissions for the CHPC deny rules (WebFetch/WebSearch/curl/wget/rsync/scp/rm)
+# --add-dir   gives Claude access to CHPC skills by bare name (gpu-use, job-triage, ...)
+#                               (needs etc/.claude/skills -> ../skills symlink)
+# --append-system-prompt-file   injects the CHPC CLAUDE.md as system prompt
+
+DIR=/uufs/chpc.utah.edu/sys/installdir/r8/claude/2.1.284
+ETC=/uufs/chpc.utah.edu/sys/etc/agents/claude
+
+# Force CC to use the classic renderer to avoid the alternate screen issues with scrolling of the prompt history instead of the window and copy/paste not working. The disable mouse was an inadequate half measure.
+# export CLAUDE_CODE_DISABLE_MOUSE=0
+export CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1
+
+# Plugins can ship their own MCP servers that would get around mcp blocking exec flags. This will stop plugin connections.
+export CLAUDE_CODE_SKIP_PLUGIN_MCP_SERVERS=1
+
+exec $DIR/bin/claude-real --strict-mcp-config --mcp-config /uufs/chpc.utah.edu/sys/etc/agents/claude/managed-mcp.json \
+  --settings $ETC/settings.json \
+  --add-dir $ETC/etc \
+  --append-system-prompt-file $ETC/etc/CLAUDE.md "$@"

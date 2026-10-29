@@ -1,0 +1,68 @@
+#!/bin/bash
+# Codex CLI wrapper - CHPC open-models build (Codex 0.153.4 + CHPC Qwen on nimbus).
+#
+# Links the shared CHPC instructions/skills, routes Codex only to the internal
+# vLLM service, and disables Codex web search and code mode. These command-line
+# configuration pins override any corresponding user config.toml settings.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+CODEX_REAL="$SCRIPT_DIR/codex-real"
+BWRAP=/usr/bin/bwrap
+
+if [[ ! -x "$CODEX_REAL" ]]; then
+  echo "CHPC: codex-real is missing or not executable at $CODEX_REAL" >&2
+  exit 1
+fi
+
+# Shared with the normal codex module.
+LINKER=/uufs/chpc.utah.edu/sys/etc/agents/codex_chpc_links.sh
+if [[ -r "$LINKER" ]]; then
+  source "$LINKER"
+else
+  echo "CHPC: $LINKER not found; AGENTS.md/skills not linked" >&2
+fi
+
+# model must match vLLM's --served-model-name. Codex 0.153.4 uses the nested
+# code_mode setting; the 0.114.0 wrapper used features.code_mode=false.
+PINS=(
+  --config 'model="Qwen/Qwen3.8-27B-FP8"'
+  --config 'model_catalog_json="/uufs/chpc.utah.edu/sys/etc/agents/codex_CHPC_local_model/0.153.4/codex_model_catalog.json"'
+  --config 'model_provider="chpc-vllm"'
+  --config 'model_providers.chpc-vllm.name="CHPC Coder"'
+  --config 'model_providers.chpc-vllm.base_url="http://nimbus.chpc.utah.edu:44242/v1"'
+  --config 'model_providers.chpc-vllm.wire_api="responses"'
+  --config 'model_providers.chpc-vllm.env_key="CHPC_CODER_API_KEY"'
+  --config 'web_search="disabled"'
+  --config 'mcp_servers.chpc-docs.url="http://nimbus.chpc.utah.edu:8000/mcp"'
+  --config 'mcp_servers.chpc-docs.enabled=true'
+  --config 'features.use_linux_sandbox_bwrap=true'
+  --config 'features.code_mode.enabled=false'
+  --config 'features.multi_agent=false'
+  --config 'features.goals=false'
+  --config 'features.image_generation=false'
+  --config 'features.browser_use=false'
+  --config 'features.computer_use=false'
+  --config 'features.apps=false'
+  --config 'features.plugins=false'
+)
+
+# The local-model wrapper keeps shell network tools available by default because
+# model traffic stays on CHPC. Set CHPC_CODEX_MASK_NETWORK=1 to mask them.
+if [[ "${CHPC_CODEX_MASK_NETWORK:-0}" != "1" || ! -x "$BWRAP" ]]; then
+  exec "$CODEX_REAL" "$@" "${PINS[@]}"
+fi
+
+# Resolve symlinks (nc -> ncat) and dedupe; bwrap cannot mount onto a symlink.
+mask=()
+seen=""
+for command_name in curl wget rsync scp sftp nc ncat telnet; do
+  command_path=$(command -v "$command_name" 2>/dev/null) || continue
+  resolved_path=$(readlink -f "$command_path") || continue
+  case " $seen " in *" $resolved_path "*) continue ;; esac
+  seen="$seen $resolved_path"
+  mask+=(--ro-bind /dev/null "$resolved_path")
+done
+
+exec "$BWRAP" --dev-bind / / "${mask[@]}" "$CODEX_REAL" "$@" "${PINS[@]}"

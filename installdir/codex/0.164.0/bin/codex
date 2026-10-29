@@ -1,0 +1,40 @@
+#!/bin/bash
+# Codex CLI wrapper — CHPC restrictions + bwrap network-command masking.
+# Also links the CHPC AGENTS.md and skills into the user's ~/.codex.
+
+# Change hard coded BWRAP path when upgrading codex version
+BWRAP=/uufs/chpc.utah.edu/sys/installdir/r8/codex/0.164.0/bin/bwrap
+
+# ---- CHPC instructions and skills -------------------------------------------
+# Shared with the codex_CHPC_local_model module.
+LINKER=/uufs/chpc.utah.edu/sys/etc/agents/codex_chpc_links.sh
+if [[ -r "$LINKER" ]]; then
+  source "$LINKER"
+else
+  echo "CHPC: $LINKER not found; AGENTS.md/skills not linked" >&2
+fi
+
+# ---- Config pins (outrank anything in ~/.codex/config.toml) -----------------
+PINS=(
+  --config 'web_search="disabled"'
+  --config 'mcp_servers.chpc-docs.url="http://nimbus.chpc.utah.edu:8000/mcp"'
+  --config 'mcp_servers.chpc-docs.enabled=true'
+  --config 'features.code_mode.enabled=false'
+)
+
+if [[ ! -x "$BWRAP" ]]; then
+  echo "CHPC: bwrap not found at '${BWRAP:-<unset>}'; refusing to start codex" >&2
+  exit 1
+fi
+
+# Resolve symlinks (nc -> ncat) and dedupe; bwrap can't mount onto a symlink.
+mask=(); seen=""
+for b in curl wget rsync scp sftp nc ncat telnet rm rmdir unlink; do
+  p=$(command -v "$b" 2>/dev/null) || continue
+  r=$(readlink -f "$p") || continue
+  case " $seen " in *" $r "*) continue;; esac
+  seen="$seen $r"
+  mask+=(--ro-bind /dev/null "$r")
+done
+
+exec "$BWRAP" --dev-bind / / "${mask[@]}" codex-real "$@" "${PINS[@]}"

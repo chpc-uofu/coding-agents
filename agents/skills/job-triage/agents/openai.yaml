@@ -1,0 +1,4 @@
+interface:
+  display_name: "Job Triage"
+  short_description: "Diagnose why a CHPC SLURM job failed."
+  default_prompt: "Use $job-triage to diagnose why this SLURM job failed and recommend a fix."

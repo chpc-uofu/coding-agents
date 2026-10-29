@@ -1,0 +1,111 @@
+{
+  "extends": "linux-host-compat",
+  "meta": {
+    "name": "chpc-codex",
+    "description": "CHPC Codex sandbox: blocks network transfer tools and credential files"
+  },
+  "workdir": {
+    "access": "none"
+  },
+  "filesystem": {
+    "allow": [
+      "/scratch",
+      "/tmp",
+      "/dev/shm",
+      "/dev/pts",
+      "/uufs/chpc.utah.edu/sys"
+    ],
+    "read": [
+      "/etc",
+      "/usr",
+      "/opt",
+      "/proc",
+      "/sys",
+      "/run"
+    ],
+    "allow_file": [
+      "/dev/ptmx"
+    ]
+  },
+  "command_policies": {
+    "commands": {
+      "curl": {
+        "from": {
+          "session": {
+            "invocation_policy": {
+              "default": "deny"
+            },
+            "sandbox": {}
+          }
+        },
+        "executable": "/usr/bin/curl"
+      },
+      "wget": {
+        "from": {
+          "session": {
+            "invocation_policy": {
+              "default": "deny"
+            },
+            "sandbox": {}
+          }
+        },
+        "executable": "/usr/bin/wget"
+      },
+      "rsync": {
+        "from": {
+          "session": {
+            "invocation_policy": {
+              "default": "deny"
+            },
+            "sandbox": {}
+          }
+        },
+        "executable": "/usr/bin/rsync"
+      },
+      "scp": {
+        "from": {
+          "session": {
+            "invocation_policy": {
+              "default": "deny"
+            },
+            "sandbox": {}
+          }
+        },
+        "executable": "/usr/bin/scp"
+      },
+      "sftp": {
+        "from": {
+          "session": {
+            "invocation_policy": {
+              "default": "deny"
+            },
+            "sandbox": {}
+          }
+        },
+        "executable": "/usr/bin/sftp"
+      },
+      "nc": {
+        "from": {
+          "session": {
+            "invocation_policy": {
+              "default": "deny"
+            },
+            "sandbox": {}
+          }
+        },
+        "executable": "/usr/bin/nc.openbsd"
+      },
+      "telnet": {
+        "from": {
+          "session": {
+            "invocation_policy": {
+              "default": "deny"
+            },
+            "sandbox": {}
+          }
+        },
+        "executable": "/usr/bin/inetutils-telnet"
+      }
+    }
+  }
+}

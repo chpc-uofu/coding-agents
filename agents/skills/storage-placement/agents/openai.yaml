@@ -1,0 +1,4 @@
+interface:
+  display_name: "Storage Placement"
+  short_description: "Choose the right CHPC filesystem for your data."
+  default_prompt: "Use $storage-placement to recommend where to stage, write, and store files for this job."

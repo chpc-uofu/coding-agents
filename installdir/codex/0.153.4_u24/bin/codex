@@ -1,0 +1,81 @@
+#!/bin/bash
+# Codex CLI wrapper (Ubuntu 24 / redtail) — CHPC restrictions + nono sandbox.
+# bwrap does not work on Redtail due to a namespace issue, so this version uses nono to (Landlock) block curl/wget/rsync/scp/etc.
+# (see command_policies in the profile) and hides credential files.
+# Also links the CHPC AGENTS.md and skills into the user's ~/.codex.
+
+# Change hard coded paths when upgrading codex or nono
+ROOT=/uufs/chpc.utah.edu/sys/installdir/r8/codex/0.153.4_u24
+NONO=/uufs/chpc.utah.edu/sys/installdir/r8/nono/0.80.0/nono
+PROFILE=$ROOT/etc/nono.json
+
+# ---- CHPC instructions and skills -------------------------------------------
+# Shared with the codex_CHPC_local_model module.
+LINKER=/uufs/chpc.utah.edu/sys/etc/agents/codex_chpc_links.sh
+if [[ -r "$LINKER" ]]; then
+  source "$LINKER"
+else
+  echo "CHPC: $LINKER not found; AGENTS.md/skills not linked" >&2
+fi
+
+# ---- Config pins (outrank anything in ~/.codex/config.toml) -----------------
+# nono is the sandbox, so Codex's own (bwrap-based) sandbox is turned off.
+PINS=(
+  --config 'web_search="disabled"'
+  --config 'features.code_mode.enabled=false'
+  --config 'sandbox_mode="danger-full-access"'
+)
+
+if [[ ! -x "$NONO" || ! -r "$PROFILE" ]]; then
+  echo "CHPC: nono or its profile is missing — refusing to run Codex unsandboxed" >&2
+  exit 1
+fi
+
+# No nono update checks / registry hints (no outbound calls from the sandbox).
+export NONO_NO_UPDATE_CHECK=1 NONO_NO_PACK_UPDATE_HINTS=1
+
+# ---- Home directory grants ----------------------------------------------------
+# nono will not grant $HOME itself: it holds nono's own state, and Landlock
+# cannot deny a path inside an allowed directory. So walk $HOME and grant
+# everything except these paths (nono state + the profile's credential denies),
+# descending into any directory that contains one of them.
+PROTECT=(
+  .nono .local/state/nono
+  .ssh .gnupg .aws .azure .gcloud .config/gcloud .kube .docker .pki .keys
+  .secrets .credentials .vault-token .terraform.d .git-credentials .netrc
+  .npmrc .bunfig.toml .config/bun/bunfig.toml .config/op .op .1password
+  .password-store .local/share/keyrings .env .envrc
+  .bashrc .bash_profile .bash_login .bash_logout .profile .config/fish
+  .zshrc .zprofile .zshenv .zlogin .zlogout
+  .bash_history .zsh_history .python_history .history
+  .mozilla/firefox .config/google-chrome .config/chromium .config/BraveSoftware
+  .config/microsoft-edge .config/opera .config/vivaldi
+)
+grants=()
+grant_tree() {   # $1 = directory under $HOME
+  local p rel x descend
+  for p in "$1"/* "$1"/.[!.]* "$1"/..?*; do
+    [[ -e "$p" || -L "$p" ]] || continue
+    rel=${p#"$HOME"/}; descend=0
+    for x in "${PROTECT[@]}"; do
+      [[ "$rel" == "$x" ]] && continue 2
+      [[ "$x" == "$rel"/* ]] && descend=1
+    done
+    if (( descend )); then
+      [[ -d "$p" && ! -L "$p" ]] && grant_tree "$p"
+    elif [[ -d "$p" ]]; then
+      grants+=(--allow "$p")
+    else
+      grants+=(--allow-file "$p")
+    fi
+  done
+}
+grant_tree "$HOME"
+
+# Working directory, unless it is $HOME (or above), which is covered above.
+case "$PWD/" in
+  "$HOME"/?*) grants+=(--allow "$PWD") ;;
+esac
+
+exec "$NONO" run -s --profile "$PROFILE" "${grants[@]}" \
+  -- "$ROOT/bin/codex-real" "$@" "${PINS[@]}"

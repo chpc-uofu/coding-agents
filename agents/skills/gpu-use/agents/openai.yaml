@@ -1,0 +1,4 @@
+interface:
+  display_name: "GPU Use"
+  short_description: "Pick a GPU, write SLURM GPU directives, load CUDA/nvhpc, run GPU containers, verify and monitor."
+  default_prompt: "Use $gpu-use to help me find an available GPU and write the correct SLURM job script."

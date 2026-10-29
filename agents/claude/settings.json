@@ -1,0 +1,20 @@
+{
+  "env": {
+    "CLAUDE_CODE_DISABLE_MOUSE": "1"
+  },
+  "disableClaudeAiConnectors": true,
+  "allowedMcpServers": [
+    { "serverName": "chpc-docs" }
+    ],
+  "permissions": {
+    "deny": [
+      "WebFetch",
+      "WebSearch",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(rsync:*)",
+      "Bash(scp:*)",
+      "Bash(rm:*)"
+    ]
+  }
+}

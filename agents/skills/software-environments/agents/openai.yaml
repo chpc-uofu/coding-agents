@@ -1,0 +1,4 @@
+interface:
+  display_name: "Software Environments"
+  short_description: "Set up software, modules, conda, venv, or containers on CHPC."
+  default_prompt: "Use $software-environments to help install or set up software for this job on CHPC."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SLURM Utilization Audit"
+  short_description: "Audit CHPC SLURM CPU/GPU efficiency."
+  default_prompt: "Use $slurm-utilization-audit to analyze this CHPC SLURM job and recommend concrete directive and runtime tuning changes."
