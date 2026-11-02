@@ -3,7 +3,7 @@
 # Also links the CHPC AGENTS.md and skills into the user's ~/.codex.
 
 # Change hard coded BWRAP path when upgrading codex version
-BWRAP=/uufs/chpc.utah.edu/sys/installdir/r8/codex/0.164.0/bin/bwrap
+BWRAP=/uufs/chpc.utah.edu/sys/installdir/r8/codex/0.164.0/wrapper/bwrap
 
 # ---- CHPC instructions and skills -------------------------------------------
 # Shared with the codex_CHPC_local_model module.
