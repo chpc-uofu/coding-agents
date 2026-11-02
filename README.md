@@ -2,7 +2,7 @@
 
 Wrappers, configuration, and Lmod modulefiles that give users at the University of Utah Center for High Performance Computing (CHPC) access to AI coding agents on our clusters. Each agent loads with guardrails that limit network access, destructive commands, and access to credentials, plus CHPC-specific instructions and skills so the agent knows how to work with Slurm, modules, and our storage. Each agent handles system prompts, skills, and restrictions differently, so each has its own wrapper and config.
 
-Coding agents are currently only allowed in our general environment, which is used for fairly open research computing. Users there can download and run their own binaries, so a determined user can get around any of these controls. The goal is safe defaults for well-meaning users: stop an agent from making common costly mistakes like deleting files, sending data off campus, or reading SSH keys, while keeping it useful for HPC work. It is also stated CHPC policy for users to use agents via our modules and not user-level installations.
+Coding agents are currently only allowed in our general environment, which is used for fairly open research computing. Users there can download and run their own binaries, so a determined user can get around any of these controls. With that in mind, the goal of our agent modules is to set safe defaults for well-meaning users: stop an agent from making common costly mistakes like deleting files, data exfiltration, reading private information (e.g., API keys), or being exposed to prompt injections, while keeping it useful for HPC work. It is also stated CHPC policy for users to use agents via our modules and not user-level installations.
 
 Supported agents:
 
@@ -20,10 +20,10 @@ Users run `module load <agent>` and then the agent's normal command. The guardra
 
 Each agent is installed as two pieces:
 
-- The vendor binary, renamed `<tool>-real` (not in this repo).
-- A small wrapper script with the tool's normal name that adds CHPC flags, config, and sandboxing, then runs `<tool>-real`.
+- The vendor binary, renamed `<tool>-real`, in `<tool>/<version>/bin/` (not in this repo).
+- A small wrapper script with the tool's normal name, in `<tool>/<version>/wrapper/`, that adds CHPC flags, config, and sandboxing, then runs `<tool>-real` by its full path.
 
-The modulefile puts the wrapper on `PATH`. Shared instructions (system prompt), skills, and per-tool settings live in one central directory (`agents/`) which is either pointed to in the wrapper or injected into the user's agent configuration directory with a seperate script..
+The modulefile only puts `wrapper/` on `PATH`, so users get the wrapper by default and `<tool>-real` is not on `PATH`. OpenCode is the exception: its module aliases `opencode` to the sandbox script `opencode_sndbx.sh` (see below). Shared instructions (system prompt), skills, and per-tool settings live in one central directory (`agents/`) which is either pointed to in the wrapper or injected into the user's agent configuration directory with a separate script.
 
 ## Repository layout
 
@@ -90,17 +90,15 @@ The modulefile sets two variables that load the CHPC instructions and skills:
 
 OpenCode also loads skills from each user's `~/.claude/skills` and `~/.agents/skills`, so users see their own skills next to the CHPC ones.
 
-`installdir/opencode/<version>/wrappers/opencode` also refuses to start if the current directory contains another user's uNID.
+`installdir/opencode/<version>/wrappers/opencode` is an extra security measure that refuses to start if the current directory contains another user's uNID. The current modulefile does not use it yet. It may be added to OpenCode and the other agents later.
 
 ### Antigravity
 
 The wrapper always passes `--sandbox`, which uses Linux namespaces to block outbound network access and restrict the filesystem to the workspace. It also links the CHPC instructions and skills into `~/.gemini/config/`, where Antigravity reads `AGENTS.md` as global rules and `skills/<name>/SKILL.md` as skills.
 
-The wrapper is in `<version>/wrapper/` and the real binary is in `<version>/bin/`. The modulefile only puts `wrapper/` on `PATH`, so `antigravity-real` is not on `PATH` and users get the sandboxed wrapper by default.
-
 ### Shared instructions
 
-`agents/AGENTS.md` (and `CLAUDE.md` for Claude Code) tells every agent the cluster rules: no heavy work on login nodes, no writes to `/sys`, no outbound network calls without approval, no credentials in output, confirm before deleting files, and load the partition selection skill before submitting jobs. These are instructions to the model. The hard limits come from the wrappers and sandbox above.
+`agents/AGENTS.md` (and `CLAUDE.md` for Claude Code) tells every agent the cluster rules: no heavy work on login nodes, no writes to `/sys`, no outbound network calls (Slurm and the CHPC docs MCP excepted), no credentials in output, confirm before deleting files, and load the partition selection skill before submitting jobs. These are instructions to the model. The hard limits come from the wrappers and sandbox above.
 
 ## Adapting this for your site
 
@@ -126,6 +124,9 @@ The live files are owned by `hpcapps`. This repo is the source, with the live co
 
 1. Edit and commit in this repo.
 2. As `hpcapps`, copy changed files to the matching live path (see the layout table).
-3. Every so often, check for edits made directly on the live copies and pull them back into the repo:
 
-To add a new version of a tool: copy the previous version's folder and modulefile, update the version number and the hardcoded `DIR=` or `BWRAP=` path in the wrapper, and place the program binary as `<tool>-real` in the live `bin/` directory.
+To add a new version of a tool: copy the previous version's folder and modulefile, update the version number and the hardcoded `DIR=`, `ROOT=`, or `BWRAP=` path in the wrapper, and place the program binary as `<tool>-real` in the live `<version>/bin/` directory. The wrapper goes in `<version>/wrapper/`.
+
+## License
+
+GPL v2. See [`LICENSE`](LICENSE).
