@@ -20,6 +20,7 @@ PINS=(
   --config 'mcp_servers.chpc-docs.url="http://nimbus.chpc.utah.edu:8000/mcp"'
   --config 'mcp_servers.chpc-docs.enabled=true'
   --config 'features.code_mode.enabled=false'
+  --config 'tui.alternate_screen="never"'
 )
 
 if [[ ! -x "$BWRAP" ]]; then
