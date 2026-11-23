@@ -94,7 +94,7 @@ OpenCode also loads skills from each user's `~/.claude/skills` and `~/.agents/sk
 
 ### Antigravity
 
-The wrapper always passes `--sandbox`, which uses Linux namespaces to block outbound network access and restrict the filesystem to the workspace. It also links the CHPC instructions and skills into `~/.gemini/config/`, where Antigravity reads `AGENTS.md` as global rules and `skills/<name>/SKILL.md` as skills.
+The 1.5.4 wrapper does not use Antigravity's own `--sandbox`, because that blocks the network access Slurm commands need. Instead it runs Antigravity under `bwrap` with `curl`, `wget`, `rsync`, `scp`, `sftp`, `nc`, `ncat`, `telnet`, `rm`, `rmdir`, and `unlink` replaced by `/dev/null`. This masks those commands but does not block the network or restrict the filesystem to the workspace. The wrapper also links the CHPC instructions and skills into `~/.gemini/config/`, where Antigravity reads `AGENTS.md` as global rules and `skills/<name>/SKILL.md` as skills.
 
 ### Shared instructions
 
@@ -114,7 +114,7 @@ Search for these and replace them with your own values:
 | uNID pattern `u[0-9]{7}` | `installdir/opencode/<version>/wrappers/opencode` |
 | `AGENTS.md`, `CLAUDE.md`, and skills content | `agents/` |
 
-You also need `bwrap` (bubblewrap) with unprivileged user namespaces enabled on your login and compute nodes for the Codex and OpenCode sandboxes.
+You also need `bwrap` (bubblewrap) with unprivileged user namespaces enabled on your login and compute nodes for the Codex, Antigravity, and OpenCode sandboxes.
 
 API keys are never stored in these files. They come from environment variables (for example `SANDSTONE_KEY`, `CHPC_CODER_API_KEY`) or each user's own login.
 
