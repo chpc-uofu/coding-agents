@@ -1,0 +1,37 @@
+#!/bin/bash
+# Antigravity CLI wrapper — CHPC restrictions + bwrap network-command masking.
+# Also links the CHPC AGENTS.md and skills into the user's ~/.gemini.
+#
+# Antigravity's own --sandbox is not used: it blocks the network that
+# Slurm needs (squeue, sbatch, ...). bwrap masks risky binaries instead.
+
+# Change hard coded BWRAP path when upgrading antigravity version
+BWRAP=/uufs/chpc.utah.edu/sys/installdir/r8/antigravity/1.5.4/wrapper/bwrap
+
+# Stop the CLI from replacing its own binary.
+export AGY_CLI_DISABLE_AUTO_UPDATE=1
+
+# ---- CHPC instructions and skills -------------------------------------------
+LINKER=/uufs/chpc.utah.edu/sys/etc/agents/gemini_chpc_links.sh
+if [[ -r "$LINKER" ]]; then
+  source "$LINKER"
+else
+  echo "CHPC: $LINKER not found; AGENTS.md/skills not linked" >&2
+fi
+
+if [[ ! -x "$BWRAP" ]]; then
+  echo "CHPC: bwrap not found at '${BWRAP:-<unset>}'; refusing to start antigravity" >&2
+  exit 1
+fi
+
+# Resolve symlinks (nc -> ncat) and dedupe; bwrap can't mount onto a symlink.
+mask=(); seen=""
+for b in curl wget rsync scp sftp nc ncat telnet rm rmdir unlink; do
+  p=$(command -v "$b" 2>/dev/null) || continue
+  r=$(readlink -f "$p") || continue
+  case " $seen " in *" $r "*) continue;; esac
+  seen="$seen $r"
+  mask+=(--ro-bind /dev/null "$r")
+done
+
+exec "$BWRAP" --dev-bind / / "${mask[@]}" /uufs/chpc.utah.edu/sys/installdir/r8/antigravity/1.5.4/bin/antigravity-real "$@"
