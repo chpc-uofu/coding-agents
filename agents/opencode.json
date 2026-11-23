@@ -78,10 +78,6 @@
   },
   "model": "chpc-vllm/Qwen/Qwen3.8-27B-FP8",
   "small_model": "chpc-vllm/Qwen/Qwen3.8-27B-FP8",
-  "instructions": [
-    "/uufs/chpc.utah.edu/sys/etc/agents/AGENTS.md",
-    "/uufs/chpc.utah.edu/sys/etc/agents/skills/*.md"
-  ],
   "enabled_providers": [
     "chpc-vllm",
     "openai",
@@ -91,9 +87,6 @@
   ],
   "permission": {
     "bash": {
-      "*": "ask",
-      "git*": "allow",
-      "npm*": "allow",
       "grep*": "allow",
       "rm*": "deny"
     }

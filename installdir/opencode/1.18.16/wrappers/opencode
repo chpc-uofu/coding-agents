@@ -16,4 +16,4 @@ if [[ "$CWD" =~ (u[0-9]{7}) ]]; then
     fi
 fi
 
-exec /uufs/chpc.utah.edu/sys/installdir/r8/opencode/1.14.29/bin/opencode "$@"
+exec /uufs/chpc.utah.edu/sys/installdir/r8/opencode/1.18.16/bin/opencode "$@"
